@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ne pişirsem?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F3F6F0;
+    --surface: #FFFFFF;
+    --ink: #1C2A21;
+    --muted: #5E6D63;
+    --line: #D9E2D6;
+    --basil: #2E7D4F;
+    --basil-ink: #FFFFFF;
+    --basil-soft: #E1EFE4;
+    --oil: #E8B931;
+    --tomato: #D9482F;
+    --tomato-soft: #FBE7E2;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #131915; --surface: #1C241F; --ink: #E9F0EA; --muted: #9DAEA2; --line: #2D3A31;
+      --basil: #5DBB82; --basil-ink: #0E1A12; --basil-soft: #223A2B; --oil: #F0C64A;
+      --tomato: #FF7A5F; --tomato-soft: #3A221D;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131915; --surface: #1C241F; --ink: #E9F0EA; --muted: #9DAEA2; --line: #2D3A31;
+    --basil: #5DBB82; --basil-ink: #0E1A12; --basil-soft: #223A2B; --oil: #F0C64A;
+    --tomato: #FF7A5F; --tomato-soft: #3A221D;
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-size: 17px; line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 28px 20px 120px; }
+  [hidden] { display: none !important; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--oil); outline-offset: 2px; }
+
+  h1 { font-size: clamp(40px, 12vw, 60px); font-weight: 800; line-height: .95; letter-spacing: -0.03em; margin: 8px 0 10px; }
+  .lede { color: var(--muted); margin: 0 0 32px; max-width: 34ch; }
+  h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 12px; }
+  .block { margin-bottom: 32px; }
+  .note { color: var(--muted); font-size: 15px; margin: 8px 0 0; }
+
+  .add-row { display: flex; gap: 8px; }
+  .add-row input {
+    flex: 1; min-width: 0; font: inherit; color: var(--ink);
+    background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 12px 14px;
+  }
+  .add-row input:focus { border-color: var(--basil); outline: none; }
+  .btn {
+    border: 0; border-radius: 14px; padding: 12px 18px; font-weight: 600;
+    background: var(--ink); color: var(--bg);
+  }
+  .btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .photo-btn { margin-top: 10px; width: 100%; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips:empty { display: none; }
+  .mine { margin-top: 14px; }
+  .chip {
+    border: 2px solid var(--line); background: var(--surface); border-radius: 999px;
+    padding: 6px 14px; font-size: 16px; line-height: 1.3;
+  }
+  .chip.on { background: var(--basil); border-color: var(--basil); color: var(--basil-ink); }
+  .chip .x { margin-left: 6px; font-weight: 800; }
+  .staples-label { font-size: 15px; color: var(--muted); margin: 18px 0 8px; }
+
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .seg.four { grid-template-columns: 1fr 1fr; }
+  .seg button {
+    border: 2px solid var(--line); background: var(--surface); border-radius: 14px;
+    padding: 12px 10px; text-align: left; font-weight: 600;
+  }
+  .seg button small { display: block; font-weight: 400; color: var(--muted); font-size: 14px; }
+  .seg button.on { border-color: var(--basil); background: var(--basil-soft); }
+
+  .stepper { display: inline-flex; align-items: center; gap: 4px; background: var(--surface); border: 2px solid var(--line); border-radius: 14px; }
+  .stepper button { border: 0; background: transparent; width: 48px; height: 46px; font-size: 22px; font-weight: 600; }
+  .stepper output { min-width: 92px; text-align: center; font-weight: 600; }
+
+  .cta-bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    padding: 12px 20px calc(env(safe-area-inset-bottom, 0px) + 12px);
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+  }
+  .cta-bar .inner { max-width: 560px; margin: 0 auto; }
+  .cta {
+    width: 100%; border: 0; border-radius: 18px; padding: 17px; font-size: 19px; font-weight: 800;
+    background: var(--basil); color: var(--basil-ink);
+  }
+  .cta:disabled { opacity: .45; cursor: default; }
+
+  .back { border: 0; background: transparent; padding: 6px 0; color: var(--muted); font-weight: 600; margin-bottom: 12px; }
+
+  /* loading */
+  .loading { text-align: center; padding-top: 18vh; }
+  .pot { position: relative; width: 120px; height: 120px; margin: 0 auto 28px; }
+  .pot .body { position: absolute; left: 14px; right: 14px; bottom: 10px; height: 54px; background: var(--basil); border-radius: 6px 6px 26px 26px; }
+  .pot .lid { position: absolute; left: 6px; right: 6px; bottom: 62px; height: 10px; background: var(--ink); border-radius: 6px; }
+  .pot .steam { position: absolute; bottom: 78px; width: 6px; height: 26px; border-radius: 6px; background: var(--muted); opacity: 0; animation: steam 1.8s ease-in-out infinite; }
+  .pot .steam:nth-child(1) { left: 38px; }
+  .pot .steam:nth-child(2) { left: 57px; animation-delay: .5s; }
+  .pot .steam:nth-child(3) { left: 76px; animation-delay: 1s; }
+  @keyframes steam { 0% { transform: translateY(8px); opacity: 0; } 40% { opacity: .7; } 100% { transform: translateY(-22px); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .pot .steam { animation: none; opacity: .5; } }
+  .loading p { margin: 0 0 6px; }
+  .loading .big { font-size: 24px; font-weight: 600; }
+
+  /* results */
+  .cards { display: grid; gap: 14px; }
+  .card {
+    text-align: left; width: 100%; background: var(--surface); border: 2px solid var(--line);
+    border-radius: 20px; padding: 18px;
+  }
+  .card:hover { border-color: var(--basil); }
+  .card h3 { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 4px; line-height: 1.2; }
+  .card p { margin: 0 0 12px; color: var(--muted); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 14px; padding: 3px 10px; border-radius: 999px; background: var(--basil-soft); }
+  .buy { margin-top: 12px; font-size: 15px; padding: 8px 12px; border-radius: 12px; background: var(--tomato-soft); color: var(--tomato); }
+  .buy.none { background: var(--basil-soft); color: var(--basil); }
+  .more { margin-top: 18px; width: 100%; }
+  .error { background: var(--tomato-soft); color: var(--tomato); border-radius: 14px; padding: 14px 16px; margin-bottom: 18px; }
+
+  /* detail */
+  .detail h1 { font-size: clamp(34px, 10vw, 48px); }
+  .ing { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
+  .ing li { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .ing .mark { flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 13px; font-weight: 800; transform: translateY(4px); }
+  .ing .mark.have { background: var(--basil); color: var(--basil-ink); }
+  .ing .mark.need { background: var(--tomato); color: #fff; }
+  .ing .amt { margin-left: auto; color: var(--muted); text-align: right; }
+  .legend { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .steps { padding-left: 1.4em; margin: 0; }
+  .steps li { padding: 8px 0 8px 4px; }
+  .steps li::marker { font-weight: 800; color: var(--basil); }
+  .tip { border-left: 4px solid var(--oil); padding: 4px 0 4px 14px; color: var(--muted); }
+
+  /* cook mode */
+  .cook {
+    position: fixed; inset: 0; background: var(--bg); z-index: 10;
+    display: flex; flex-direction: column;
+    padding: calc(env(safe-area-inset-top, 0px) + 16px) 20px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  }
+  .cook-top { display: flex; justify-content: space-between; align-items: center; max-width: 640px; width: 100%; margin: 0 auto; }
+  .cook-count { font-weight: 600; color: var(--muted); }
+  .progress { height: 6px; background: var(--line); border-radius: 6px; max-width: 640px; width: 100%; margin: 14px auto 0; overflow: hidden; }
+  .progress span { display: block; height: 100%; background: var(--basil); transition: width .3s; }
+  .cook-body { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 640px; width: 100%; margin: 0 auto; overflow-y: auto; }
+  .cook-step { font-size: clamp(24px, 6.6vw, 34px); line-height: 1.3; font-weight: 600; letter-spacing: -0.01em; }
+  .timer { margin-top: 26px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .timer .clock { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .timer.done .clock { color: var(--tomato); }
+  .cook-nav { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; max-width: 640px; width: 100%; margin: 0 auto; }
+  .cook-nav .btn { padding: 16px; font-size: 18px; }
+  .cook-nav .next { background: var(--basil); color: var(--basil-ink); }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- 1. Ingredients form -->
+  <section id="viewForm">
+    <h1>Ne pişirsem?</h1>
+    <p class="lede">Elindekileri seç, ocak ve fırınla yapabileceğin tarifleri adım adım bulalım.</p>
+
+    <div class="block">
+      <h2>Elinde neler var?</h2>
+      <form class="add-row" id="addForm">
+        <input id="ingInput" type="text" placeholder="Malzeme yaz, örn. kabak" autocomplete="off" enterkeyhint="done" aria-label="Malzeme ekle">
+        <button class="btn" type="submit">Ekle</button>
+      </form>
+      <button class="btn ghost photo-btn" id="photoBtn" type="button" hidden>Buzdolabının fotoğrafından ekle</button>
+      <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+      <p class="note" id="photoNote" hidden></p>
+      <div class="chips mine" id="mine"></div>
+      <p class="staples-label">Sık kullanılanlar</p>
+      <div class="chips" id="staples"></div>
+    </div>
+
+    <div class="block">
+      <h2>Ne yemek istiyorsun?</h2>
+      <div class="seg four" id="meal"></div>
+    </div>
+
+    <div class="block">
+      <h2>Alışveriş</h2>
+      <div class="seg" id="shop"></div>
+    </div>
+
+    <div class="block">
+      <h2>Kaç kişilik?</h2>
+      <div class="stepper">
+        <button type="button" id="minus" aria-label="Azalt">−</button>
+        <output id="servings"></output>
+        <button type="button" id="plus" aria-label="Artır">+</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Loading -->
+  <section id="viewLoading" class="loading" hidden aria-live="polite">
+    <div class="pot" aria-hidden="true"><span class="steam"></span><span class="steam"></span><span class="steam"></span><div class="lid"></div><div class="body"></div></div>
+    <p class="big" id="loadingText">Tarifler hazırlanıyor</p>
+    <p class="note">Bu genelde 20 ile 60 saniye sürüyor.</p>
+    <button class="btn ghost" id="cancelBtn" type="button" style="margin-top:24px">Vazgeç</button>
+  </section>
+
+  <!-- 3. Results -->
+  <section id="viewResults" hidden>
+    <button class="back" id="backToForm" type="button">‹ Malzemeler</button>
+    <h2 style="font-size:30px;font-weight:800">Bunları yapabilirsin</h2>
+    <div class="error" id="resultsError" hidden></div>
+    <div class="cards" id="cards"></div>
+    <button class="btn ghost more" id="moreBtn" type="button">Başka tarifler göster</button>
+  </section>
+
+  <!-- 4. Detail -->
+  <section id="viewDetail" class="detail" hidden>
+    <button class="back" id="backToResults" type="button">‹ Tarifler</button>
+    <h1 id="dName"></h1>
+    <p class="lede" id="dDesc" style="margin-bottom:14px"></p>
+    <div class="tags" id="dTags" style="margin-bottom:28px"></div>
+    <div class="block">
+      <h2>Malzemeler</h2>
+      <ul class="ing" id="dIng"></ul>
+      <p class="legend" id="dLegend"></p>
+    </div>
+    <div class="block">
+      <h2>Yapılışı</h2>
+      <ol class="steps" id="dSteps"></ol>
+    </div>
+    <p class="tip" id="dTip" hidden></p>
+  </section>
+
+  <p class="error" id="noSample" hidden>Bu sayfa tarif önermek için Claude'a bağlanamıyor. Linki claude.ai içinden (uygulamada ya da giriş yapılmış tarayıcıda) aç.</p>
+</main>
+
+<div class="cta-bar" id="ctaBar">
+  <div class="inner">
+    <button class="cta" id="findBtn" type="button" disabled>Tarif bul</button>
+    <button class="cta" id="cookBtn" type="button" hidden>Pişirmeye başla</button>
+  </div>
+</div>
+
+<!-- Cook mode -->
+<div class="cook" id="cook" hidden role="dialog" aria-modal="true" aria-label="Pişirme modu">
+  <div class="cook-top">
+    <span class="cook-count" id="cookCount"></span>
+    <button class="btn ghost" id="cookClose" type="button">Kapat</button>
+  </div>
+  <div class="progress"><span id="cookBar"></span></div>
+  <div class="cook-body">
+    <div class="cook-step" id="cookStep" aria-live="polite"></div>
+    <div class="timer" id="timer" hidden>
+      <span class="clock" id="clock"></span>
+      <button class="btn" id="timerBtn" type="button"></button>
+    </div>
+  </div>
+  <div class="cook-nav">
+    <button class="btn ghost" id="prevBtn" type="button">Geri</button>
+    <button class="btn next" id="nextBtn" type="button">Sonraki adım</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const STAPLES = ["yumurta","süt","tereyağı","zeytinyağı","un","soğan","sarımsak","domates","patates","makarna","pirinç","peynir","yoğurt","ekmek","salça","limon","biber","mercimek"];
+  const MEALS = [
+    { id: "kahvalti", label: "Kahvaltı", sub: "Sabah için" },
+    { id: "ana", label: "Ana yemek", sub: "Öğle ya da akşam" },
+    { id: "hafif", label: "Hafif bir şey", sub: "Atıştırmalık, salata" },
+    { id: "tatli", label: "Tatlı", sub: "Fırında ya da ocakta" }
+  ];
+  const SHOP = [
+    { id: false, label: "Sadece elimdekiler", sub: "Markete gitmeden" },
+    { id: true, label: "Markete uğrayabilirim", sub: "Birkaç şey alırım" }
+  ];
+  const STORE_KEY = "nepisirsem-v1";
+
+  const state = { ings: [], meal: "ana", shop: false, servings: 2, recipes: [], seen: [], current: null };
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (s) Object.assign(state, { ings: s.ings || [], meal: s.meal || "ana", shop: !!s.shop, servings: s.servings || 2 });
+  } catch (e) {}
+  const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify({ ings: state.ings, meal: state.meal, shop: state.shop, servings: state.servings })); } catch (e) {} };
+
+  function el(tag, props, ...kids) {
+    const n = document.createElement(tag);
+    if (props) for (const [k, v] of Object.entries(props)) {
+      if (k === "class") n.className = v; else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+    }
+    for (const k of kids) if (k != null) n.append(k);
+    return n;
+  }
+  const norm = s => s.trim().toLocaleLowerCase("tr");
+
+  // ---------- form ----------
+  function addIng(raw) {
+    raw.split(/[,\n]/).map(norm).filter(Boolean).forEach(v => { if (!state.ings.includes(v)) state.ings.push(v); });
+    save(); renderForm();
+  }
+  function removeIng(v) { state.ings = state.ings.filter(x => x !== v); save(); renderForm(); }
+
+  function renderForm() {
+    const mine = $("mine"); mine.replaceChildren();
+    state.ings.forEach(v => mine.append(el("button", { class: "chip on", type: "button", "aria-label": v + " kaldır", onclick: () => removeIng(v) }, v, el("span", { class: "x", "aria-hidden": "true" }, "×"))));
+    const st = $("staples"); st.replaceChildren();
+    STAPLES.filter(v => !state.ings.includes(v)).forEach(v => st.append(el("button", { class: "chip", type: "button", onclick: () => addIng(v) }, "+ " + v)));
+    const meal = $("meal"); meal.replaceChildren();
+    MEALS.forEach(m => meal.append(el("button", { type: "button", class: m.id === state.meal ? "on" : "", "aria-pressed": String(m.id === state.meal), onclick: () => { state.meal = m.id; save(); renderForm(); } }, m.label, el("small", null, m.sub))));
+    const shop = $("shop"); shop.replaceChildren();
+    SHOP.forEach(o => shop.append(el("button", { type: "button", class: o.id === state.shop ? "on" : "", "aria-pressed": String(o.id === state.shop), onclick: () => { state.shop = o.id; save(); renderForm(); } }, o.label, el("small", null, o.sub))));
+    $("servings").textContent = state.servings + " kişilik";
+    $("findBtn").disabled = state.ings.length === 0 || !sample;
+  }
+  $("addForm").addEventListener("submit", e => { e.preventDefault(); const i = $("ingInput"); if (i.value.trim()) addIng(i.value); i.value = ""; i.focus(); });
+  $("minus").onclick = () => { state.servings = Math.max(1, state.servings - 1); save(); renderForm(); };
+  $("plus").onclick = () => { state.servings = Math.min(8, state.servings + 1); save(); renderForm(); };
+
+  // ---------- views ----------
+  const VIEWS = ["viewForm", "viewLoading", "viewResults", "viewDetail"];
+  function show(v) {
+    VIEWS.forEach(x => $(x).hidden = x !== v);
+    $("ctaBar").hidden = !(v === "viewForm" || v === "viewDetail");
+    $("findBtn").hidden = v !== "viewForm";
+    $("cookBtn").hidden = v !== "viewDetail";
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- Claude ----------
+  let sample = null, ctl = null;
+  const errText = code => ({
+    not_granted: "Tarif önerebilmem için Claude kullanımına izin vermen gerekiyor. Tekrar denediğinde izin penceresi çıkar.",
+    rate_limited: "Çok hızlı oldu, biraz bekleyip tekrar dene.",
+    invalid_json: "Cevap düzgün gelmedi, bir kez daha dene.",
+    session_expired: "Oturumun kapanmış görünüyor. Sayfayı yenileyip tekrar dene.",
+    refused: "Bu isteğe tarif üretilemedi, malzemeleri değiştirip dene."
+  })[code] || "Bir sorun çıktı, tekrar dene.";
+
+  function prompt() {
+    const meal = MEALS.find(m => m.id === state.meal);
+    return `Sen ev mutfağı için tarif öneren deneyimli bir aşçısın. Kullanıcı İtalya'da yaşıyor; alınması gereken malzemeler sıradan bir İtalyan süpermarketinde kolayca bulunabilmeli.
+
+Kullanıcının elindeki malzemeler: ${state.ings.join(", ")}
+Öğün: ${meal.label} (${meal.sub})
+Kişi sayısı: ${state.servings}
+Mutfak ekipmanı: SADECE ocak ve fırın, artı normal tencere, tava, fırın tepsisi, kase, bıçak, rende, çırpma teli. Mikrodalga, airfryer, blender, mikser, mutfak robotu YOK; bunları gerektiren tarif önerme.
+Her zaman var sayılabilecekler: tuz, karabiber, su.
+${state.shop
+  ? "Kullanıcı markete uğrayabilir. Her tarifte en fazla 4 ek malzeme alınabilir ama ağırlıklı olarak elindekileri kullan. Tariflerden en az biri hiç alışveriş gerektirmesin, mümkünse."
+  : "Kullanıcı markete GİDEMEZ. SADECE listedeki malzemeleri ve tuz, karabiber, su kullan. Listedeki her şeyi kullanmak zorunda değilsin."}
+${state.seen.length ? "Daha önce önerilenleri tekrar önerme: " + state.seen.join(", ") : ""}
+
+Birbirinden farklı 4 tarif öner. Her şey Türkçe olsun. Miktarlar ${state.servings} kişiye göre olsun. Adımlar kısa, net ve sırayla yapılabilir olsun; ateş seviyesini (kısık, orta, yüksek) ve fırın sıcaklığını (°C) ve süreleri belirt. Beklemeli adımlarda (pişirme, demlenme, fırında kalma) timer_min alanına dakika yaz, diğerlerinde null.
+
+SADECE şu yapıda tek bir JSON döndür, başka hiçbir şey yazma:
+{"recipes":[{"name":"Tarif adı","description":"Tek cümlelik tanım","time_min":25,"equipment":["ocak","fırın"],"difficulty":"kolay","ingredients":[{"item":"yumurta","amount":"2 adet","have":true}],"steps":[{"text":"Adım metni","timer_min":null}],"tip":"Kısa bir ipucu"}]}
+"equipment" yalnızca "ocak" ve/veya "fırın" içerir. "difficulty": kolay, orta ya da zor. "have": malzeme kullanıcının listesinde varsa ya da tuz, karabiber, su ise true; alınması gerekiyorsa false.`;
+  }
+
+  async function findRecipes(more) {
+    if (!sample) return;
+    if (!more) state.seen = [];
+    show("viewLoading");
+    $("resultsError").hidden = true;
+    const msgs = ["Tarifler hazırlanıyor", "Dolaba bakılıyor", "Tencereler ısınıyor", "Son tadımlar yapılıyor"];
+    let i = 0; $("loadingText").textContent = msgs[0];
+    const tick = setInterval(() => { i = (i + 1) % msgs.length; $("loadingText").textContent = msgs[i]; }, 4000);
+    ctl = new AbortController();
+    try {
+      const data = await sample.json(prompt(), { signal: ctl.signal, modelTier: "default", cache: false });
+      const list = (data && Array.isArray(data.recipes) ? data.recipes : [])
+        .filter(r => r && r.name && Array.isArray(r.steps) && r.steps.length && Array.isArray(r.ingredients));
+      if (!list.length) throw { code: "invalid_json" };
+      state.recipes = list;
+      state.seen.push(...list.map(r => r.name));
+      renderResults();
+      show("viewResults");
+    } catch (e) {
+      if (e && e.code === "cancelled") { show(more ? "viewResults" : "viewForm"); }
+      else {
+        if (!more) state.recipes = [];
+        renderResults();
+        $("resultsError").textContent = errText(e && e.code);
+        $("resultsError").hidden = false;
+        show("viewResults");
+      }
+    } finally { clearInterval(tick); }
+  }
+  $("findBtn").onclick = () => findRecipes(false);
+  $("moreBtn").onclick = () => findRecipes(true);
+  $("cancelBtn").onclick = () => ctl && ctl.abort();
+  $("backToForm").onclick = () => show("viewForm");
+
+  // ---------- results ----------
+  const eqLabel = e => e === "fırın" ? "Fırın" : e === "ocak" ? "Ocak" : e;
+  function tagsFor(r) {
+    const t = [];
+    if (r.time_min) t.push(r.time_min + " dk");
+    (r.equipment || []).forEach(e => t.push(eqLabel(e)));
+    if (r.difficulty) t.push(r.difficulty.charAt(0).toLocaleUpperCase("tr") + r.difficulty.slice(1));
+    return el("div", { class: "tags" }, ...t.map(x => el("span", { class: "tag" }, x)));
+  }
+  function renderResults() {
+    const c = $("cards"); c.replaceChildren();
+    state.recipes.forEach(r => {
+      const need = r.ingredients.filter(x => x.have === false).map(x => x.item);
+      c.append(el("button", { class: "card", type: "button", onclick: () => openDetail(r) },
+        el("h3", null, r.name),
+        r.description ? el("p", null, r.description) : null,
+        tagsFor(r),
+        el("div", { class: need.length ? "buy" : "buy none" }, need.length ? "Alınacaklar: " + need.join(", ") : "Her şey elinde var")
+      ));
+    });
+    $("moreBtn").hidden = !state.recipes.length;
+  }
+
+  // ---------- detail ----------
+  function openDetail(r) {
+    state.current = r;
+    $("dName").textContent = r.name;
+    $("dDesc").textContent = r.description || "";
+    $("dTags").replaceChildren(...tagsFor(r).childNodes);
+    const ul = $("dIng"); ul.replaceChildren();
+    r.ingredients.forEach(x => ul.append(el("li", null,
+      el("span", { class: "mark " + (x.have === false ? "need" : "have"), "aria-label": x.have === false ? "alınacak" : "var" }, x.have === false ? "+" : "✓"),
+      el("span", null, x.item),
+      el("span", { class: "amt" }, x.amount || ""))));
+    const anyNeed = r.ingredients.some(x => x.have === false);
+    $("dLegend").textContent = anyNeed ? "✓ elinde var, + alman gerekiyor" : "";
+    const ol = $("dSteps"); ol.replaceChildren();
+    r.steps.forEach(s => ol.append(el("li", null, s.text + (s.timer_min ? ` (${s.timer_min} dk)` : ""))));
+    $("dTip").hidden = !r.tip; $("dTip").textContent = r.tip || "";
+    show("viewDetail");
+  }
+  $("backToResults").onclick = () => show("viewResults");
+
+  // ---------- cook mode ----------
+  let step = 0, timerLeft = 0, timerId = null, wake = null;
+  const fmt = s => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  function stopTimer() { clearInterval(timerId); timerId = null; }
+  function renderStep() {
+    const r = state.current, s = r.steps[step];
+    $("cookCount").textContent = `Adım ${step + 1} / ${r.steps.length}`;
+    $("cookBar").style.width = ((step + 1) / r.steps.length * 100) + "%";
+    $("cookStep").textContent = s.text;
+    stopTimer();
+    const t = $("timer"); t.classList.remove("done");
+    if (s.timer_min) {
+      timerLeft = Math.round(s.timer_min * 60);
+      $("clock").textContent = fmt(timerLeft);
+      $("timerBtn").textContent = "Zamanlayıcıyı başlat";
+      t.hidden = false;
+    } else t.hidden = true;
+    $("prevBtn").disabled = step === 0;
+    $("nextBtn").textContent = step === r.steps.length - 1 ? "Afiyet olsun, bitir" : "Sonraki adım";
+  }
+  function beep() {
+    try {
+      const a = new (window.AudioContext || window.webkitAudioContext)();
+      [0, .35, .7].forEach(d => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; g.gain.value = .2; o.connect(g).connect(a.destination); o.start(a.currentTime + d); o.stop(a.currentTime + d + .2); });
+    } catch (e) {}
+  }
+  $("timerBtn").onclick = () => {
+    if (timerId) { stopTimer(); $("timerBtn").textContent = "Devam et"; return; }
+    if (timerLeft <= 0) { renderStep(); return; }
+    $("timerBtn").textContent = "Duraklat";
+    timerId = setInterval(() => {
+      timerLeft--; $("clock").textContent = fmt(Math.max(0, timerLeft));
+      if (timerLeft <= 0) { stopTimer(); $("timer").classList.add("done"); $("clock").textContent = "Süre doldu"; $("timerBtn").textContent = "Sıfırla"; beep(); }
+    }, 1000);
+  };
+  async function openCook() {
+    step = 0; $("cook").hidden = false; document.body.style.overflow = "hidden"; renderStep();
+    try { wake = await navigator.wakeLock.request("screen"); } catch (e) { wake = null; }   // keep the screen on while cooking
+  }
+  function closeCook() {
+    stopTimer(); $("cook").hidden = true; document.body.style.overflow = "";
+    try { wake && wake.release(); } catch (e) {} wake = null;
+  }
+  $("cookBtn").onclick = openCook;
+  $("cookClose").onclick = closeCook;
+  $("prevBtn").onclick = () => { if (step > 0) { step--; renderStep(); } };
+  $("nextBtn").onclick = () => { if (step < state.current.steps.length - 1) { step++; renderStep(); } else closeCook(); };
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("cook").hidden) closeCook(); });
+
+  // ---------- photo ----------
+  $("photoBtn").onclick = () => $("photoInput").click();
+  $("photoInput").onchange = async () => {
+    const f = $("photoInput").files[0]; if (!f) return;
+    const note = $("photoNote"); note.hidden = false; note.textContent = "Fotoğrafa bakılıyor…";
+    $("photoBtn").disabled = true;
+    try {
+      const list = await sample.json(
+        "Bu fotoğraf bir buzdolabı, dolap ya da mutfak tezgahı. Görünen yiyecek malzemelerini Türkçe, kısa ve küçük harfle listele (örn. \"yumurta\", \"kabak\"). Emin olmadıklarını yazma. SADECE bir JSON string dizisi döndür, örn. [\"yumurta\",\"süt\"].",
+        { images: f, modelTier: "default" });
+      const items = Array.isArray(list) ? list.filter(x => typeof x === "string") : [];
+      if (items.length) { addIng(items.join(",")); note.textContent = items.length + " malzeme eklendi. Yanlış olanlara dokunup kaldırabilirsin."; }
+      else note.textContent = "Fotoğrafta malzeme seçemedim, elle ekleyebilirsin.";
+    } catch (e) { note.textContent = errText(e && e.code); }
+    finally { $("photoBtn").disabled = false; $("photoInput").value = ""; }
+  };
+
+  // ---------- boot ----------
+  renderForm();
+  show("viewForm");
+  (async () => {
+    try { sample = window.claude ? await window.claude.use("sample") : null; } catch (e) { sample = null; }
+    if (!sample) { document.querySelector("main").prepend($("noSample")); $("noSample").hidden = false; renderForm(); return; }
+    renderForm();
+    try {
+      const caps = await sample.limits();
+      if (caps && caps.images) { $("photoBtn").hidden = false; $("photoInput").accept = caps.images.mediaTypes.join(","); }
+    } catch (e) {}
+  })();
+})();
+</script>
+</body>
+</html>
